@@ -2,6 +2,7 @@ django
 gunicorn
 psycopg2-binary
 djangorestframework
+djangorestframework-simplejwt
 dj-database-url
 whitenoise
 django-cors-headers
