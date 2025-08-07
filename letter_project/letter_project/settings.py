@@ -138,6 +138,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOWED_ORIGINS = [
+    "https://letter-frontend-gzp7.onrender.com"
     "http://localhost:3000", # Your local frontend development server
     "http://127.0.0.1:3000",
 ]
