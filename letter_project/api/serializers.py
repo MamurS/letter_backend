@@ -19,8 +19,9 @@ class LetterSerializer(serializers.ModelSerializer):
             'registered_at', 
             'isCancelled'
         ]
-        # **FIXED**: 'registered_by_username' is no longer read-only
-        read_only_fields = ['id', 'number', 'registered_at']
+        # **FIXED**: 'registered_by_username' is now correctly marked as read-only.
+        # The server will provide this value, not the client.
+        read_only_fields = ['id', 'number', 'registered_at', 'registered_by_username']
 
     # Use a read_only field to represent the model's 'is_cancelled' field
     isCancelled = serializers.BooleanField(source='is_cancelled', read_only=True)
