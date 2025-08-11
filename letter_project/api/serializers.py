@@ -8,6 +8,9 @@ class LetterSerializer(serializers.ModelSerializer):
     """
     Serializer for the Letter model. Converts Letter objects to JSON and back.
     """
+    # Map the frontend field name to the backend field name
+    isCancelled = serializers.BooleanField(source='is_cancelled', read_only=True)
+    
     class Meta:
         model = Letter
         fields = [
@@ -19,12 +22,20 @@ class LetterSerializer(serializers.ModelSerializer):
             'registered_at', 
             'isCancelled'
         ]
-        # **FIXED**: 'registered_by_username' is now correctly marked as read-only.
-        # The server will provide this value, not the client. This resolves the 500 error.
-        read_only_fields = ['id', 'number', 'registered_at', 'registered_by_username']
+        # Mark fields that are set by the server, not the client
+        read_only_fields = ['id', 'number', 'registered_at', 'registered_by_username', 'isCancelled']
 
-    # Use a read_only field to represent the model's 'is_cancelled' field
-    isCancelled = serializers.BooleanField(source='is_cancelled', read_only=True)
+    def validate_subject(self, value):
+        """Validate that subject is not empty after stripping whitespace"""
+        if not value or not value.strip():
+            raise serializers.ValidationError("Subject cannot be empty.")
+        return value.strip()
+
+    def validate_addressee(self, value):
+        """Validate that addressee is not empty after stripping whitespace"""
+        if not value or not value.strip():
+            raise serializers.ValidationError("Addressee cannot be empty.")
+        return value.strip()
 
 
 class SignUpSerializer(serializers.Serializer):

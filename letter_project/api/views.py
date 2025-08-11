@@ -22,24 +22,35 @@ class LetterListCreateAPIView(generics.ListCreateAPIView):
 
     @transaction.atomic
     def perform_create(self, serializer):
-        # Find all numbers currently used by active letters
-        active_numbers = set(Letter.objects.filter(is_cancelled=False).values_list('number', flat=True))
-        
-        # Find the oldest cancelled letter whose number is not currently in use
-        available_cancelled = Letter.objects.filter(is_cancelled=True).exclude(number__in=active_numbers).order_by('number')
+        try:
+            # Find all numbers currently used by active letters
+            active_numbers = set(Letter.objects.filter(is_cancelled=False).values_list('number', flat=True))
+            
+            # Find the oldest cancelled letter whose number is not currently in use
+            available_cancelled = Letter.objects.filter(is_cancelled=True).exclude(number__in=active_numbers).order_by('number')
 
-        if available_cancelled.exists():
-            new_number = available_cancelled.first().number
-        else:
-            # Find the highest number in the entire table to determine the next one
-            last_letter = Letter.objects.order_by('number').last()
-            new_number = (last_letter.number + 1) if last_letter else 301
+            if available_cancelled.exists():
+                new_number = available_cancelled.first().number
+            else:
+                # Find the highest number in the entire table to determine the next one
+                last_letter = Letter.objects.order_by('number').last()
+                new_number = (last_letter.number + 1) if last_letter else 301
 
-        # **FIXED**: Use the authenticated user's username from the request
-        serializer.save(
-            number=new_number,
-            registered_by_username=self.request.user.username
-        )
+            # Save with the computed number and authenticated user's username
+            letter = serializer.save(
+                number=new_number,
+                registered_by_username=self.request.user.username
+            )
+            
+            return letter
+            
+        except Exception as e:
+            # Log the actual error for debugging
+            print(f"Error in perform_create: {str(e)}")
+            print(f"User: {self.request.user}")
+            print(f"User authenticated: {self.request.user.is_authenticated}")
+            print(f"Serializer data: {serializer.validated_data}")
+            raise e
 
 class LetterCancelAPIView(views.APIView):
     """
